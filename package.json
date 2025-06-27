@@ -1,0 +1,19 @@
+{
+  "name": "prompt-mentor-mcp",
+  "version": "1.0.0",
+  "description": "Prompt Mentor MCP",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "devDependencies": {
+    "@types/node": "24.0.4",
+    "typescript": "5.8.3"
+  },
+  "dependencies": {}
+}
