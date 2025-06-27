@@ -1,0 +1,42 @@
+{
+  "dxt_version": "0.1",
+  "name": "prompt-mentor-mcp",
+  "display_name": "Prompt Mentor MCP Server",
+  "version": "1.0.0",
+  "description": "An MCP server that provides provides feedback and mentoring for prompt engineering",
+  "long_description": "An MCP server that provides provides feedback and mentoring for prompt engineering",
+  "author": {
+    "name": "KelvinJRosado"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "say_hello",
+      "description": "Get a friendly hello message from the server with optional personalization"
+    },
+    {
+      "name": "get_current_time",
+      "description": "Get the current system time in a formatted string"
+    },
+    {
+      "name": "server_info",
+      "description": "Get detailed information about this MCP server including uptime and system details"
+    }
+  ],
+  "keywords": ["mcp", "llm", "dxt"],
+  "license": "MIT",
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}
