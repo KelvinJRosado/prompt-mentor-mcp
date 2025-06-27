@@ -1,4 +1,4 @@
-# Prompt Mentor MCP
+# Prompt Mentor MCP Server
 
 A TypeScript-based Model Context Protocol (MCP) server that provides prompt mentoring capabilities using ES2022 modules.
 

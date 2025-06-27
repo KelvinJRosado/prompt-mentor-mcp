@@ -1,19 +1,31 @@
 {
   "name": "prompt-mentor-mcp",
   "version": "1.0.0",
-  "description": "Prompt Mentor MCP",
+  "description": "An MCP server that provides provides feedback and mentoring for prompt engineering",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "test": "npm run build && echo 'Testing MCP server...' ",
+    "validate": "dxt validate manifest.json"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mcp",
+    "llm",
+    "dxt"
+  ],
+  "author": "KelvinJRosado",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "24.0.4",
     "typescript": "5.8.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
