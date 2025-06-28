@@ -21,6 +21,7 @@ import {
   validateServerState,
   validateToolParams,
 } from './utils.js';
+import { createGeminiClient, testConnectivity } from './gemini.js';
 
 /**
  * Create and configure the MCP server
@@ -59,6 +60,20 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               description: 'Optional name to personalize the greeting',
             },
           },
+        },
+      },
+      {
+        name: 'test_gemini',
+        description: 'Test connectivity to the Gemini API',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            GEMINI_API_KEY: {
+              type: 'string',
+              description: 'The Gemini API key to test connectivity',
+            },
+          },
+          required: ['GEMINI_API_KEY'],
         },
       },
     ];
@@ -121,10 +136,40 @@ server.setRequestHandler(
           };
         }
 
+        case 'test_gemini': {
+          const apiKey = args?.GEMINI_API_KEY;
+
+          if (!apiKey || typeof apiKey !== 'string' || !apiKey.trim()) {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              'GEMINI_API_KEY is required and must be a non-empty string'
+            );
+          }
+
+          log('info', 'Testing Gemini API connectivity');
+
+          await testConnectivity(apiKey);
+
+          const message = 'Gemini API connectivity test completed successfully';
+
+          log('info', 'Gemini connectivity test completed', {
+            success: true,
+          });
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: message,
+              },
+            ],
+          };
+        }
+
         default: {
           const errorMessage = `Unknown tool: ${name}`;
           log('warn', errorMessage, {
-            availableTools: ['say_hello'],
+            availableTools: ['say_hello', 'test_gemini'],
           });
 
           throw new McpError(ErrorCode.MethodNotFound, errorMessage);
@@ -171,7 +216,7 @@ export async function startServer(): Promise<void> {
       'info',
       `${SERVER_NAME} v${SERVER_VERSION} is running and ready to accept requests`
     );
-    log('info', 'Available tools: say_hello');
+    log('info', 'Available tools: say_hello, test_gemini');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     log('error', 'Failed to start server', { error: errorMessage });
