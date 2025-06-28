@@ -1,14 +1,4 @@
 {
-  "servers": {
-    "promot-mentor-dev-mcp": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["./dist/index.js"],
-      "env": {
-        "GEMINI_API_KEY": "${input:gemini-api-key}"
-      }
-    }
-  },
   "inputs": [
     {
       "id": "gemini-api-key",
@@ -17,5 +7,15 @@
       "default": "foo",
       "password": true
     }
-  ]
+  ],
+  "servers": {
+    "prompt-mentor-dev-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./dist/index.js"],
+      "env": {
+        "GEMINI_API_KEY": "${input:gemini-api-key}"
+      }
+    }
+  }
 }
