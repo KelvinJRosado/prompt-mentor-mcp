@@ -21,7 +21,7 @@ import {
   validateServerState,
   validateToolParams,
 } from './utils.js';
-import { createGeminiClient, testConnectivity } from './gemini.js';
+import { testConnectivity, reviewPrompts } from './gemini.js';
 
 /**
  * Create and configure the MCP server
@@ -68,6 +68,23 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: 'object',
           properties: {},
+        },
+      },
+      {
+        name: 'review_prompts',
+        description: 'Review a list of prompts from a conversation',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            prompts: {
+              type: 'array',
+              description: 'List of prompts from the conversation to review',
+              items: {
+                type: 'string',
+              },
+            },
+          },
+          required: ['prompts'],
         },
       },
     ];
@@ -133,7 +150,6 @@ server.setRequestHandler(
         case 'test_gemini': {
           const apiKey = process.env.GEMINI_API_KEY;
 
-          // TODO: Remove this
           log('info', `API KEY: ${apiKey}`, {
             success: true,
           });
@@ -170,10 +186,81 @@ server.setRequestHandler(
           };
         }
 
+        case 'review_prompts': {
+          const prompts = args?.prompts;
+
+          if (!Array.isArray(prompts)) {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              'prompts parameter is required and must be an array'
+            );
+          }
+
+          if (prompts.length === 0) {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              'prompts array cannot be empty'
+            );
+          }
+
+          // Validate that all prompts are strings
+          const invalidPrompts = prompts.filter(
+            (prompt) => typeof prompt !== 'string'
+          );
+          if (invalidPrompts.length > 0) {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              'All prompts must be strings'
+            );
+          }
+
+          log('info', 'Received prompts for review', {
+            promptCount: prompts.length,
+            totalCharacters: prompts.reduce(
+              (sum, prompt) => sum + prompt.length,
+              0
+            ),
+          });
+
+          const apiKey = process.env.GEMINI_API_KEY;
+
+          if (!apiKey || typeof apiKey !== 'string' || !apiKey.trim()) {
+            throw new McpError(
+              ErrorCode.InvalidParams,
+              'GEMINI_API_KEY environment variable is required and must be a non-empty string'
+            );
+          }
+
+          log('info', 'Starting prompt review using Gemini AI');
+
+          const reviewResponse = await reviewPrompts(prompts, apiKey);
+
+          if (!reviewResponse || typeof reviewResponse !== 'string') {
+            throw new McpError(
+              ErrorCode.InternalError,
+              'Gemini API did not return a valid review response'
+            );
+          }
+
+          log('info', 'Prompt review completed successfully', {
+            success: true,
+            responseLength: reviewResponse.length,
+          });
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: reviewResponse,
+              },
+            ],
+          };
+        }
+
         default: {
           const errorMessage = `Unknown tool: ${name}`;
           log('warn', errorMessage, {
-            availableTools: ['say_hello', 'test_gemini'],
+            availableTools: ['say_hello', 'test_gemini', 'review_prompts'],
           });
 
           throw new McpError(ErrorCode.MethodNotFound, errorMessage);
@@ -221,7 +308,7 @@ export async function startServer(): Promise<void> {
       `${SERVER_NAME} v${SERVER_VERSION} is running and ready to accept requests`
     );
 
-    log('info', 'Available tools: say_hello, test_gemini');
+    log('info', 'Available tools: say_hello, test_gemini, review_prompts');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     log('error', 'Failed to start server', { error: errorMessage });
