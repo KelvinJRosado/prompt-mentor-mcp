@@ -4,7 +4,7 @@
  * Hello World MCP Server
  *
  * A basic MCP server that demonstrates the Model Context Protocol
- * with a simple hello world message and current time functionality.
+ * with a simple hello world message functionality.
  *
  * This server follows DXT specifications and includes proper error handling,
  * logging, and defensive programming practices.
@@ -53,46 +53,6 @@ function validateServerState(): void {
       ErrorCode.InternalError,
       'Server not properly initialized'
     );
-  }
-}
-
-/**
- * Generates a personalized hello world message
- */
-function generateHelloMessage(): string {
-  const greetings = [
-    'Hello from your friendly MCP server!',
-    'Greetings! Your MCP server is working perfectly.',
-    'Hi there! This is a sample message from your MCP server.',
-    'Welcome! Your Model Context Protocol server is operational.',
-    'Hello! This MCP server is ready to assist you.',
-  ];
-
-  const randomIndex = Math.floor(Math.random() * greetings.length);
-  return greetings[randomIndex];
-}
-
-/**
- * Gets the current system time in a formatted string
- */
-function getCurrentTimeFormatted(): string {
-  try {
-    const now = new Date();
-    return now.toLocaleString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      timeZoneName: 'short',
-    });
-  } catch (error) {
-    log('error', 'Failed to format current time', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return new Date().toISOString(); // Fallback to ISO string
   }
 }
 
@@ -154,22 +114,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
-      {
-        name: 'get_current_time',
-        description: 'Get the current system time in a formatted string',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-        },
-      },
-      {
-        name: 'server_info',
-        description: 'Get information about this MCP server',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-        },
-      },
     ];
 
     log('info', `Returning ${tools.length} available tools`);
@@ -205,7 +149,7 @@ server.setRequestHandler(
       switch (name) {
         case 'say_hello': {
           const personName = args?.name;
-          let message = generateHelloMessage();
+          let message = 'Hello from your friendly MCP server!';
 
           if (
             personName &&
@@ -230,55 +174,10 @@ server.setRequestHandler(
           };
         }
 
-        case 'get_current_time': {
-          const timeString = getCurrentTimeFormatted();
-
-          log('info', 'Generated current time', { timeString });
-
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `The current time is: ${timeString}`,
-              },
-            ],
-          };
-        }
-
-        case 'server_info': {
-          const serverInfo = {
-            name: SERVER_NAME,
-            version: SERVER_VERSION,
-            description:
-              'A hello-world MCP server demonstrating basic functionality',
-            capabilities: ['tools'],
-            protocol: 'Model Context Protocol (MCP)',
-            uptime: process.uptime(),
-            nodeVersion: process.version,
-            platform: process.platform,
-            architecture: process.arch,
-          };
-
-          log('info', 'Generated server info', { uptime: serverInfo.uptime });
-
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Server Information:\n${JSON.stringify(
-                  serverInfo,
-                  null,
-                  2
-                )}`,
-              },
-            ],
-          };
-        }
-
         default: {
           const errorMessage = `Unknown tool: ${name}`;
           log('warn', errorMessage, {
-            availableTools: ['say_hello', 'get_current_time', 'server_info'],
+            availableTools: ['say_hello'],
           });
 
           throw new McpError(ErrorCode.MethodNotFound, errorMessage);
@@ -325,7 +224,7 @@ async function startServer(): Promise<void> {
       'info',
       `${SERVER_NAME} v${SERVER_VERSION} is running and ready to accept requests`
     );
-    log('info', 'Available tools: say_hello, get_current_time, server_info');
+    log('info', 'Available tools: say_hello');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     log('error', 'Failed to start server', { error: errorMessage });
@@ -334,55 +233,10 @@ async function startServer(): Promise<void> {
 }
 
 /**
- * Handle graceful shutdown
- */
-function setupGracefulShutdown(): void {
-  const handleShutdown = (signal: string) => {
-    log('info', `Received ${signal}, shutting down gracefully...`);
-
-    // Close server connections
-    if (server) {
-      log('info', 'Closing server connections...');
-    }
-
-    log('info', 'Shutdown complete');
-    process.exit(0);
-  };
-
-  // Handle various shutdown signals
-  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
-  process.on('SIGINT', () => handleShutdown('SIGINT'));
-  process.on('SIGUSR1', () => handleShutdown('SIGUSR1'));
-  process.on('SIGUSR2', () => handleShutdown('SIGUSR2'));
-}
-
-/**
- * Handle uncaught exceptions and unhandled rejections
- */
-function setupErrorHandling(): void {
-  process.on('uncaughtException', (error) => {
-    log('error', 'Uncaught exception occurred', {
-      error: error.message,
-      stack: error.stack,
-    });
-    process.exit(1);
-  });
-
-  process.on('unhandledRejection', (reason, promise) => {
-    log('error', 'Unhandled promise rejection', { reason, promise });
-    process.exit(1);
-  });
-}
-
-/**
  * Main entry point
  */
 async function main(): Promise<void> {
   try {
-    // Set up error handling and graceful shutdown
-    setupErrorHandling();
-    setupGracefulShutdown();
-
     // Start the server
     await startServer();
   } catch (error) {
