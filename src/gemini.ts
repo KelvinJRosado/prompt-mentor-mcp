@@ -22,8 +22,13 @@ export function createGeminiClient(apiKey: string): GoogleGenAI {
  * @param apiKey - The Gemini API key to test
  * @returns Promise<void>
  */
-export async function testConnectivity(apiKey: string): Promise<void> {
-  console.log('Testing Gemini API connectivity...');
-  console.log(`API key provided: ${apiKey ? 'Yes' : 'No'}`);
-  console.log('Dummy connectivity test completed successfully');
+export async function testConnectivity(apiKey: string): Promise<string> {
+  const geminiClient = createGeminiClient(apiKey);
+
+  const res = await geminiClient.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: 'Explain how AI works in a few words',
+  });
+
+  return res.text || 'No response from Gemini API';
 }

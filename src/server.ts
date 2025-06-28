@@ -64,16 +64,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'test_gemini',
-        description: 'Test connectivity to the Gemini API',
+        description:
+          'Test connectivity to the Gemini API using the configured API key from environment',
         inputSchema: {
           type: 'object',
-          properties: {
-            GEMINI_API_KEY: {
-              type: 'string',
-              description: 'The Gemini API key to test connectivity',
-            },
-          },
-          required: ['GEMINI_API_KEY'],
+          properties: {},
         },
       },
     ];
@@ -137,20 +132,29 @@ server.setRequestHandler(
         }
 
         case 'test_gemini': {
-          const apiKey = args?.GEMINI_API_KEY;
+          const apiKey = process.env.GEMINI_API_KEY;
+
+          log('info', `API KEY: ${apiKey}`, {
+            success: true,
+          });
 
           if (!apiKey || typeof apiKey !== 'string' || !apiKey.trim()) {
             throw new McpError(
               ErrorCode.InvalidParams,
-              'GEMINI_API_KEY is required and must be a non-empty string'
+              'GEMINI_API_KEY environment variable is required and must be a non-empty string'
             );
           }
 
-          log('info', 'Testing Gemini API connectivity');
+          log('info', 'Testing Gemini API connectivity using environment key');
 
-          await testConnectivity(apiKey);
+          const message = await testConnectivity(apiKey);
 
-          const message = 'Gemini API connectivity test completed successfully';
+          if (!message || typeof message !== 'string') {
+            throw new McpError(
+              ErrorCode.InternalError,
+              'Gemini API did not return a valid response'
+            );
+          }
 
           log('info', 'Gemini connectivity test completed', {
             success: true,
