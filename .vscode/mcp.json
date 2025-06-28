@@ -1,0 +1,18 @@
+{
+  "servers": {
+    "promot-mentor-dev-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./dist/index.js"]
+    }
+  },
+  "inputs": [
+    {
+      "id": "GEMINI_API_KEY",
+      "type": "promptString",
+      "description": "API key for Gemini API",
+      "default": "",
+      "password": true
+    }
+  ]
+}
