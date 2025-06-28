@@ -14,7 +14,7 @@
       "id": "gemini-api-key",
       "type": "promptString",
       "description": "API key for Gemini API",
-      "default": "",
+      "default": "foo",
       "password": true
     }
   ]

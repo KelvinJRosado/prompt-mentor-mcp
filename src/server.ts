@@ -64,8 +64,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'test_gemini',
-        description:
-          'Test connectivity to the Gemini API using the configured API key from environment',
+        description: 'Test connectivity to the Gemini API',
         inputSchema: {
           type: 'object',
           properties: {},
@@ -134,6 +133,7 @@ server.setRequestHandler(
         case 'test_gemini': {
           const apiKey = process.env.GEMINI_API_KEY;
 
+          // TODO: Remove this
           log('info', `API KEY: ${apiKey}`, {
             success: true,
           });
@@ -220,6 +220,7 @@ export async function startServer(): Promise<void> {
       'info',
       `${SERVER_NAME} v${SERVER_VERSION} is running and ready to accept requests`
     );
+
     log('info', 'Available tools: say_hello, test_gemini');
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
