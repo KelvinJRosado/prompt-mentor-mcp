@@ -3,12 +3,15 @@
     "promot-mentor-dev-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["./dist/index.js"]
+      "args": ["./dist/index.js"],
+      "env": {
+        "GEMINI_API_KEY": "${input:gemini-api-key}"
+      }
     }
   },
   "inputs": [
     {
-      "id": "GEMINI_API_KEY",
+      "id": "gemini-api-key",
       "type": "promptString",
       "description": "API key for Gemini API",
       "default": "",
